@@ -7,8 +7,27 @@
     android:background="#fff"
     tools:context=".navattr.ProfileActivity">
 
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:elevation="0dp"
+        android:background="@android:color/transparent"
+        android:theme="@style/DrawerArrowStyle">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar2"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:popupTheme="@style/DrawerArrowStyle" >
+
+
+        </android.support.v7.widget.Toolbar>
+
+    </android.support.design.widget.AppBarLayout>
+
     <ScrollView
         android:layout_width="match_parent"
+        android:layout_marginTop="?attr/actionBarSize"
         android:layout_height="match_parent">
 
         <LinearLayout
@@ -16,18 +35,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="top|center"
             android:gravity="center"
+
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Profile"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:textSize="24dp"
-                android:textStyle="bold"
-                android:textColor="#000"
-                android:layout_marginBottom="10dp"/>
+
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/user_circular_profile"

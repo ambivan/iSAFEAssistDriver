@@ -2,6 +2,7 @@ package com.prateek.isafeassistdriver;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity
     Switch statuschange;
     TextView textView;
     private BottomSheetBehavior bottomSheetBehavior;
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +91,10 @@ public class MainActivity extends AppCompatActivity
         textView= findViewById(R.id.status_text);
         bottomSheetBehavior= BottomSheetBehavior.from(bottom);
 
+        progressDialog= new ProgressDialog(MainActivity.this);
+        progressDialog.setMessage("Getting your Current Location");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -96,6 +102,7 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+
         //mapcode
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
@@ -109,6 +116,15 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onStateChanged(@NonNull View view, int i) {
 
+                if(status==1){
+                    swipeup.setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
+                    status=0;
+
+                }else{
+                    swipeup.setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
+                    status=1;
+
+                }
             }
 
             @Override
@@ -162,8 +178,13 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_notification) {
             // Handle the camera action
+            item.setChecked(false);
+
+
 
         } else if (id == R.id.nav_profile) {
+            item.setChecked(false);
+
             startActivity(new Intent(MainActivity.this, ProfileActivity.class));
 
 
@@ -269,7 +290,8 @@ public class MainActivity extends AppCompatActivity
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         mCurrLocationMarker = mMap.addMarker(markerOptions);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(12));
+        progressDialog.dismiss();
         if (mGoogleApiClient != null) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
         }

@@ -1,10 +1,14 @@
 package com.prateek.isafeassistdriver.navattr;
 
+import android.app.ActionBar;
 import android.app.ProgressDialog;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,6 +35,7 @@ public class ProfileActivity extends AppCompatActivity {
     TextView username;
     DatabaseReference databaseReference;
     ProgressDialog progressDialog;
+    ActionBar actionBar;
 
 
     @Override
@@ -41,6 +46,11 @@ public class ProfileActivity extends AppCompatActivity {
         email = findViewById(R.id.user_emailid);
         username = findViewById(R.id.userprofile_username);
         edit = findViewById(R.id.edit_profile_btn);
+        Toolbar toolbar = findViewById(R.id.toolbar2);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        getSupportActionBar().setTitle("Profile");
         edit.setText("Edit");
         driver = new Driver();
         getWindow().setSoftInputMode(
@@ -56,9 +66,27 @@ public class ProfileActivity extends AppCompatActivity {
         progressDialog.setCancelable(false);
         loadinfo();
 
+        edit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (edit.getText().toString().equals("Edit")) {
+
+                    mobileno.setEnabled(true);
+                    email.setEnabled(true);
+                    edit.setText("Save");
+
+                } else {
+                    mobileno.setEnabled(false);
+                    email.setEnabled(false);
+                    edit.setText("Edit");
+
+                }
+            }
+        });
+
     }
 
-    private void loadinfo(){
+    private void loadinfo() {
 
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -101,5 +129,10 @@ public class ProfileActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }
