@@ -15,6 +15,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -51,6 +52,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.prateek.isafeassistdriver.dao.DriverLocation;
 import com.prateek.isafeassistdriver.maps.MapsActivity;
 import com.prateek.isafeassistdriver.navattr.ProfileActivity;
 import com.prateek.isafeassistdriver.welcome.SignUpActivity;
@@ -72,10 +77,12 @@ public class MainActivity extends AppCompatActivity
     Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
     private GoogleMap mMap;
-    int status=1;
+    int status = 1;
     ImageButton swipeup;
     Switch statuschange;
     TextView textView;
+    DatabaseReference databaseReference;
+    FirebaseAuth auth;
     private BottomSheetBehavior bottomSheetBehavior;
     ProgressDialog progressDialog;
 
@@ -85,13 +92,14 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        swipeup= findViewById(R.id.dropupbtn);
-        statuschange= findViewById(R.id.onlinestatusswitch);
-        View bottom= findViewById(R.id.bottom_sheet);
-        textView= findViewById(R.id.status_text);
-        bottomSheetBehavior= BottomSheetBehavior.from(bottom);
-
-        progressDialog= new ProgressDialog(MainActivity.this);
+        swipeup = findViewById(R.id.dropupbtn);
+        statuschange = findViewById(R.id.onlinestatusswitch);
+        View bottom = findViewById(R.id.bottom_sheet);
+        textView = findViewById(R.id.status_text);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottom);
+        auth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
+        progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setMessage("Getting your Current Location");
         progressDialog.setCancelable(false);
         progressDialog.show();
@@ -116,13 +124,13 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onStateChanged(@NonNull View view, int i) {
 
-                if(status==1){
+                if (status == 1) {
                     swipeup.setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
-                    status=0;
+                    status = 0;
 
-                }else{
+                } else {
                     swipeup.setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
-                    status=1;
+                    status = 1;
 
                 }
             }
@@ -135,15 +143,15 @@ public class MainActivity extends AppCompatActivity
         swipeup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(status==1){
+                if (status == 1) {
                     swipeup.setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
 
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                    status=0;
-                }else if(status==0) {
+                    status = 0;
+                } else if (status == 0) {
                     swipeup.setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
                     bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-                    status=1;
+                    status = 1;
                 }
             }
         });
@@ -151,9 +159,11 @@ public class MainActivity extends AppCompatActivity
         statuschange.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked){
+                if (isChecked) {
+                    startlocationUpdates();
                     textView.setText("You are Online");
-                }else{
+                } else {
+                    removelocationUpdates();
                     textView.setText("You are Offline");
                 }
             }
@@ -179,7 +189,6 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_notification) {
             // Handle the camera action
             item.setChecked(false);
-
 
 
         } else if (id == R.id.nav_profile) {
@@ -282,6 +291,8 @@ public class MainActivity extends AppCompatActivity
                     String subLocality = listAddresses.get(0).getSubLocality();
                     markerOptions.title("" + latLng + "," + subLocality + "," + state
                             + "," + country);
+
+                    saveDriverInfo(latLng,subLocality,state, country);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -370,5 +381,53 @@ public class MainActivity extends AppCompatActivity
                 .setNegativeButton(android.R.string.no, null)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
+    }
+
+    private void removelocationUpdates() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    }
+
+    private void startlocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+    }
+
+    private void saveDriverInfo(LatLng latLng, String subLocality, String state, String country) {
+
+        Double l1, l2;
+        l1= latLng.latitude;
+        l2= latLng.longitude;
+
+        DriverLocation driverLocation= new DriverLocation();
+
+        driverLocation.setCountry(country);
+        driverLocation.setLatitude(l1.toString());
+        driverLocation.setLongitude(l2.toString());
+        driverLocation.setState(state);
+        driverLocation.setSublocality(subLocality);
+        driverLocation.setDriverid(auth.getCurrentUser().getUid());
+
+        if (auth != null) {
+
+            databaseReference.child("DriverLocation"+auth.getCurrentUser().getUid()).push().setValue(driverLocation, new DatabaseReference.CompletionListener() {
+                @Override
+                public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
+
+                    if(databaseError== null){
+                        Toast.makeText(MainActivity.this,"Location Detected",Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+
     }
 }
