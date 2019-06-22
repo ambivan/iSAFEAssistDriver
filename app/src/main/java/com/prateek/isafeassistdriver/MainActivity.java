@@ -55,6 +55,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.prateek.isafeassistdriver.dao.Driver;
 import com.prateek.isafeassistdriver.dao.DriverLocation;
 import com.prateek.isafeassistdriver.maps.MapsActivity;
 import com.prateek.isafeassistdriver.navattr.ProfileActivity;
@@ -62,8 +63,10 @@ import com.prateek.isafeassistdriver.welcome.SignUpActivity;
 import com.prateek.isafeassistdriver.welcome.SplashActivity;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback,
@@ -86,6 +89,7 @@ public class MainActivity extends AppCompatActivity
     private BottomSheetBehavior bottomSheetBehavior;
     ProgressDialog progressDialog;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,6 +105,7 @@ public class MainActivity extends AppCompatActivity
         databaseReference = FirebaseDatabase.getInstance().getReference();
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setMessage("Getting your Current Location");
+
         progressDialog.setCancelable(false);
         progressDialog.show();
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -292,7 +297,7 @@ public class MainActivity extends AppCompatActivity
                     markerOptions.title("" + latLng + "," + subLocality + "," + state
                             + "," + country);
 
-                    saveDriverInfo(latLng,subLocality,state, country);
+                    saveDriverInfo(latLng, subLocality, state, country);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -404,11 +409,22 @@ public class MainActivity extends AppCompatActivity
     private void saveDriverInfo(LatLng latLng, String subLocality, String state, String country) {
 
         Double l1, l2;
-        l1= latLng.latitude;
-        l2= latLng.longitude;
+        l1 = latLng.latitude;
+        l2 = latLng.longitude;
 
+/*
+        DriverLocation driverLocation= new DriverLocation();
+*/
+        //Driver driverLocation = new Driver(l1.toString(), l2.toString(), auth.getCurrentUser().getUid(), subLocality, state, country);
         DriverLocation driverLocation= new DriverLocation();
 
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("latitude", l1.toString());
+        hashMap.put("longitude", l2.toString());
+        hashMap.put("driverid", auth.getCurrentUser().getUid());
+        hashMap.put("sublocality", subLocality);
+        hashMap.put("state", state);
+        hashMap.put("country", country);
         driverLocation.setCountry(country);
         driverLocation.setLatitude(l1.toString());
         driverLocation.setLongitude(l2.toString());
@@ -416,18 +432,8 @@ public class MainActivity extends AppCompatActivity
         driverLocation.setSublocality(subLocality);
         driverLocation.setDriverid(auth.getCurrentUser().getUid());
 
-        if (auth != null) {
+            databaseReference.child("Driver").child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
 
-            databaseReference.child("DriverLocation"+auth.getCurrentUser().getUid()).push().setValue(driverLocation, new DatabaseReference.CompletionListener() {
-                @Override
-                public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
-
-                    if(databaseError== null){
-                        Toast.makeText(MainActivity.this,"Location Detected",Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
 
     }
 }

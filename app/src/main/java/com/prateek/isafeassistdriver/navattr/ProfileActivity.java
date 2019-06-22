@@ -111,6 +111,9 @@ public class ProfileActivity extends AppCompatActivity {
                                 username.setText(driver.getName());
                                 email.setText(driver.getMail());
                                 mobileno.setText(driver.getContact());
+                                System.out.println(driver.getName());
+                                System.out.println(driver.getContact());
+                                System.out.println(driver.getMail());
                                 progressDialog.dismiss();
 
                             }

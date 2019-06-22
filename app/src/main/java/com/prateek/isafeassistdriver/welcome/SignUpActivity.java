@@ -101,7 +101,7 @@ public class SignUpActivity extends AppCompatActivity {
                     driver.setPass(pass.getText().toString());
                     driver.setDid(firebaseAuth.getCurrentUser().getUid());
 
-                    databaseReference.child("Driver").child(firebaseAuth.getCurrentUser().getUid()).push().setValue(driver, new DatabaseReference.CompletionListener() {
+                    databaseReference.child("Driver").child(firebaseAuth.getCurrentUser().getUid()).setValue(driver, new DatabaseReference.CompletionListener() {
                         @Override
                         public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                             if (databaseError == null) {
@@ -112,7 +112,9 @@ public class SignUpActivity extends AppCompatActivity {
                     });
 
                     Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
+
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                   /* intent.putExtras(bundle);*/
                     startActivity(intent);
                     finish();
                     // If user registered successfully then show this toast message.
