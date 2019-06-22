@@ -7,9 +7,22 @@
         <item
             android:id="@+id/nav_notification"
             android:title="Notifications" />
+
+        <item
+            android:id="@+id/nav_earnings"
+            android:title="Earnings"/>
+
+
         <item
             android:id="@+id/nav_profile"
             android:title="Profile" />
+
+        <item
+            android:id="@+id/nav_help"
+            android:title="Help"/>
+        <item
+            android:id="@+id/nav_feedback"
+            android:title="Feedback"/>
         <item
             android:id="@+id/nav_logout"
             android:title="LogOut" />

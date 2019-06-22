@@ -58,6 +58,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.prateek.isafeassistdriver.dao.Driver;
 import com.prateek.isafeassistdriver.dao.DriverLocation;
 import com.prateek.isafeassistdriver.maps.MapsActivity;
+import com.prateek.isafeassistdriver.navattr.EarningsActivity;
+import com.prateek.isafeassistdriver.navattr.FeedbackActivity;
+import com.prateek.isafeassistdriver.navattr.HelpActivity;
 import com.prateek.isafeassistdriver.navattr.ProfileActivity;
 import com.prateek.isafeassistdriver.welcome.SignUpActivity;
 import com.prateek.isafeassistdriver.welcome.SplashActivity;
@@ -205,6 +208,18 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_logout) {
             alertbuilder();
 
+
+        } else if (id == R.id.nav_earnings) {
+
+            startActivity(new Intent(MainActivity.this, EarningsActivity.class));
+
+        } else if (id == R.id.nav_help) {
+
+            startActivity(new Intent(MainActivity.this, HelpActivity.class));
+
+        } else if (id == R.id.nav_feedback) {
+
+            startActivity(new Intent(MainActivity.this, FeedbackActivity.class));
 
         }
 
@@ -416,7 +431,7 @@ public class MainActivity extends AppCompatActivity
         DriverLocation driverLocation= new DriverLocation();
 */
         //Driver driverLocation = new Driver(l1.toString(), l2.toString(), auth.getCurrentUser().getUid(), subLocality, state, country);
-        DriverLocation driverLocation= new DriverLocation();
+        DriverLocation driverLocation = new DriverLocation();
 
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("latitude", l1.toString());
@@ -432,7 +447,7 @@ public class MainActivity extends AppCompatActivity
         driverLocation.setSublocality(subLocality);
         driverLocation.setDriverid(auth.getCurrentUser().getUid());
 
-            databaseReference.child("Driver").child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
+        databaseReference.child("Driver").child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
 
 
     }
