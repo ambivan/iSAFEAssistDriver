@@ -33,6 +33,7 @@
         android:background="@drawable/layout_swipe"
         app:behavior_hideable="true"
         app:behavior_peekHeight="70dp"
+        android:elevation="16dp"
         app:layout_behavior="@string/bottom_sheet_behavior">
 
         <LinearLayout

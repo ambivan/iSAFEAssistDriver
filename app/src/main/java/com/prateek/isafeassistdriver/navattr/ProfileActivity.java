@@ -62,7 +62,7 @@ public class ProfileActivity extends AppCompatActivity {
         email.setEnabled(false);
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Driver").child(auth.getCurrentUser().getUid());
         progressDialog = new ProgressDialog(ProfileActivity.this);
-        progressDialog.setMessage("Loading Profile Info");
+        progressDialog.setMessage("Loading Profile Info..");
         progressDialog.show();
         progressDialog.setCancelable(false);
         loadinfo();
