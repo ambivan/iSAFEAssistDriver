@@ -2,6 +2,8 @@ package com.prateek.isafeassistdriver;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,6 +24,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -51,16 +54,20 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.prateek.isafeassistdriver.dao.Driver;
 import com.prateek.isafeassistdriver.dao.DriverLocation;
 import com.prateek.isafeassistdriver.maps.MapsActivity;
 import com.prateek.isafeassistdriver.navattr.EarningsActivity;
 import com.prateek.isafeassistdriver.navattr.FeedbackActivity;
 import com.prateek.isafeassistdriver.navattr.HelpActivity;
+import com.prateek.isafeassistdriver.navattr.NotiFicationActivity;
 import com.prateek.isafeassistdriver.navattr.ProfileActivity;
 import com.prateek.isafeassistdriver.welcome.SignUpActivity;
 import com.prateek.isafeassistdriver.welcome.SplashActivity;
@@ -176,6 +183,23 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("Notify", "Notify", NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+        FirebaseMessaging.getInstance().subscribeToTopic("general")
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        String msg = "Success";
+                        if (!task.isSuccessful()) {
+                            msg = "Failure";
+                        }
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     @Override
@@ -195,12 +219,10 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_notification) {
-            // Handle the camera action
-            item.setChecked(false);
+            startActivity(new Intent(MainActivity.this, NotiFicationActivity.class));
 
 
         } else if (id == R.id.nav_profile) {
-            item.setChecked(false);
 
             startActivity(new Intent(MainActivity.this, ProfileActivity.class));
 

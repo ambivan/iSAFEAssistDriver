@@ -13,6 +13,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -75,7 +76,16 @@ public class ProfileActivity extends AppCompatActivity {
                     email.setEnabled(true);
                     edit.setText("Save");
 
+
                 } else {
+                    DatabaseReference databaseref = FirebaseDatabase.getInstance().getReference().child("Driver");
+                    databaseref.child(auth.getCurrentUser().getUid()).child("mail").setValue(email.getText().toString());
+                    databaseref.child(auth.getCurrentUser().getUid()).child("contact").setValue(mobileno.getText().toString());
+
+                    System.out.println(email.getText().toString());
+                    System.out.println(mobileno.getText().toString());
+
+                    Toast.makeText(ProfileActivity.this,"Profile Updated Successfully",Toast.LENGTH_SHORT).show();
                     mobileno.setEnabled(false);
                     email.setEnabled(false);
                     edit.setText("Edit");
@@ -92,39 +102,20 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                String key = dataSnapshot.getKey();
+                System.out.println(key);
+                String name = dataSnapshot.child("name").getValue(String.class);
+                String mail = dataSnapshot.child("mail").getValue(String.class);
+                String mobile = dataSnapshot.child("contact").getValue(String.class);
+                System.out.println(name);
+                System.out.println(mail);
+                System.out.println(mobile);
 
-                    String key = ds.getKey();
-                    String sub = "-Lh";
-                    String temp;
-                    if (key.contains(sub)) {
-                        temp = key;
-                        System.out.println(temp);
+                mobileno.setText(mobile);
+                email.setText(mail);
+                username.setText(name);
+                progressDialog.dismiss();
 
-                        DatabaseReference d = databaseReference.child(temp);
-
-                        d.addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                                Driver driver = dataSnapshot.getValue(Driver.class);
-                                username.setText(driver.getName());
-                                email.setText(driver.getMail());
-                                mobileno.setText(driver.getContact());
-                                System.out.println(driver.getName());
-                                System.out.println(driver.getContact());
-                                System.out.println(driver.getMail());
-                                progressDialog.dismiss();
-
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
-                }
             }
 
             @Override
