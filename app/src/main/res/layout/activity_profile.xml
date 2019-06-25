@@ -35,10 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="top|center"
             android:gravity="center"
-
             android:orientation="vertical">
-
-
 
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/user_circular_profile"
@@ -46,6 +43,8 @@
                 android:layout_height="150dp"
                 android:layout_marginTop="20dp"
                 android:src="@drawable/userprof" />
+
+
 
             <TextView
                 android:id="@+id/userprofile_username"
