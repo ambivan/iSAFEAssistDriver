@@ -12,6 +12,10 @@ public class Driver {
     String sublocality;
     String state;
     String country;
+    String status;
+    String request;
+
+
 
 
     public Driver() {
@@ -20,6 +24,7 @@ public class Driver {
 
     public Driver(String latitude, String longitude, String driverid, String sublocality, String state, String country){
         this.latitude = latitude;
+
         this.longitude = longitude;
         this.driverid = driverid;
         this.sublocality = sublocality;
@@ -27,8 +32,10 @@ public class Driver {
         this.country = country;
     }
 
-    public Driver(String name, String contact, String mail, String pass, String did,String latitude, String longitude, String driverid, String sublocality, String state, String country) {
+    public Driver(String request,String status,String name, String contact, String mail, String pass, String did,String latitude, String longitude, String driverid, String sublocality, String state, String country) {
         this.name = name;
+        this.request= request;
+        this.status= status;
         this.contact = contact;
         this.mail = mail;
         this.pass = pass;
@@ -39,6 +46,14 @@ public class Driver {
         this.sublocality = sublocality;
         this.state = state;
         this.country = country;
+    }
+
+    public String getRequest() {
+        return request;
+    }
+
+    public void setRequest(String request) {
+        this.request = request;
     }
 
     public String getLatitude() {
@@ -127,5 +142,13 @@ public class Driver {
 
     public void setPass(String pass) {
         this.pass = pass;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

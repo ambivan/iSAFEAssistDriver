@@ -2,6 +2,7 @@ package com.prateek.isafeassistdriver;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
@@ -14,8 +15,11 @@ import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
@@ -25,6 +29,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -35,6 +40,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.Switch;
@@ -57,12 +63,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.prateek.isafeassistdriver.dao.Driver;
 import com.prateek.isafeassistdriver.dao.DriverLocation;
+import com.prateek.isafeassistdriver.dao.UserDetails;
 import com.prateek.isafeassistdriver.maps.MapsActivity;
 import com.prateek.isafeassistdriver.navattr.EarningsActivity;
 import com.prateek.isafeassistdriver.navattr.FeedbackActivity;
@@ -91,13 +100,20 @@ public class MainActivity extends AppCompatActivity
     LocationRequest mLocationRequest;
     private GoogleMap mMap;
     int status = 1;
+    String keyy;
+    final DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference().child("Driver");
+
     ImageButton swipeup;
     Switch statuschange;
+    Geocoder geocoder;
+    List<Address> addresses;
+    AlertDialog dialogBuilder;
     TextView textView;
     DatabaseReference databaseReference;
     FirebaseAuth auth;
     private BottomSheetBehavior bottomSheetBehavior;
     ProgressDialog progressDialog;
+    String username, contactno, ulat, ulong;
 
 
     @Override
@@ -174,10 +190,20 @@ public class MainActivity extends AppCompatActivity
         statuschange.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                HashMap<String, Object> hashMap = new HashMap<>();
+                Driver driver = new Driver();
+
                 if (isChecked) {
+                    hashMap.put("status", 1);
+                    driver.setStatus("1");
+                    databaseReference.child("Driver").child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
                     startlocationUpdates();
                     textView.setText("You are Online");
                 } else {
+                    hashMap.put("status", 0);
+                    driver.setStatus("1");
+                    databaseReference.child("Driver").child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
+
                     removelocationUpdates();
                     textView.setText("You are Offline");
                 }
@@ -470,6 +496,209 @@ public class MainActivity extends AppCompatActivity
         driverLocation.setDriverid(auth.getCurrentUser().getUid());
 
         databaseReference.child("Driver").child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Driver");
+        final DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Requests");
+        geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    final String key = ds.getKey();
+                    username = ds.child("name").getValue(String.class);
+                    contactno = ds.child("contactNo").getValue(String.class);
+                    ulat = ds.child("lat").getValue(String.class);
+                    ulong = ds.child("longi").getValue(String.class);
+                    final String requesting = ds.child("requesting").getValue(String.class);
+
+                    System.out.println("requesting " + requesting);
+                    databaseReference.child(auth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            String reqid = dataSnapshot.child("request").getValue(String.class);
+                            final String lat = dataSnapshot.child("latitude").getValue(String.class);
+                            final String longitude = dataSnapshot.child("longitude").getValue(String.class);
+                            final String name = dataSnapshot.child("name").getValue(String.class);
+                            final String phoneno = dataSnapshot.child("contact").getValue(String.class);
+                            final int status= dataSnapshot.child("status").getValue(Integer.class);
+
+                            Location location1 = new Location("");
+                            location1.setLatitude(Double.parseDouble(lat));
+                            location1.setLongitude(Double.parseDouble(longitude));
+                            try {
+                                Location location2 = new Location("");
+                                location2.setLatitude(Double.parseDouble(ulat));
+                                location2.setLongitude(Double.parseDouble(ulong));
+                                float distanceInMeters = location1.distanceTo(location2);
+                                System.out.println(distanceInMeters);
+
+                                if (reqid.equals("1") && distanceInMeters < 5000 && requesting.equals("1") && status==1) {
+
+                                    Toast.makeText(MainActivity.this, "User requested", Toast.LENGTH_SHORT).show();
+                                    //customdialogbuilder(username, contactno);
+
+                                    try {
+                                        addresses = geocoder.getFromLocation(Double.parseDouble(ulat), Double.parseDouble(ulong), 1);
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    final DatabaseReference dd= FirebaseDatabase.getInstance().getReference().child("Driver");
+                                    dd.addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                            for(DataSnapshot dd: dataSnapshot.getChildren()){
+                                                 keyy= dd.getKey();
+                                                System.out.println(keyy);
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                    String add = addresses.get(0).getAddressLine(0);
+                                    final TextView uname, phone, ulocation;
+                                    final Button accept, decline, bdone;
+                                    dialogBuilder = new AlertDialog.Builder(MainActivity.this).create();
+                                    LayoutInflater inflater = getLayoutInflater();
+                                    final View dialogView = inflater.inflate(R.layout.customdialog, null);
+                                    dialogBuilder.setCancelable(false);
+                                    uname = dialogView.findViewById(R.id.dname);
+                                    phone = dialogView.findViewById(R.id.dphone);
+                                    accept = dialogView.findViewById(R.id.acceptreqbtn);
+                                    decline = dialogView.findViewById(R.id.declinereqbtn);
+                                    bdone= dialogView.findViewById(R.id.donereqbtn);
+                                    ulocation = dialogView.findViewById(R.id.dloc);
+                                    uname.setText(username);
+                                    phone.setText(contactno);
+                                    ulocation.setText(add);
+                                    /*final MediaPlayer mp = MediaPlayer.create(MainActivity.this, R.raw.notifsound);
+                                    mp.start();
+*/
+                                    Vibrator vibrator;
+                                    vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                                    vibrator.vibrate(1000);
+                                    dialogBuilder.setView(dialogView);
+                                    dialogBuilder.show();
+
+                                    accept.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            UserDetails details = new UserDetails();
+                                            HashMap<String, Object> hashM = new HashMap<>();
+                                            hashM.put("requesting", "0");
+                                            hashM.put("drivername", name);
+                                            hashM.put("driverphone", phoneno);
+                                            hashM.put("driverlat", lat);
+                                            hashM.put("driverlong", longitude);
+                                            details.setRequesting("0");
+                                            HashMap<String, Object> hashMap = new HashMap<>();
+                                            hashMap.put("request", "0");
+
+                                            //if (databaseReference.getKey() != auth.getCurrentUser().getUid()) {
+//                                            dd.child(keyy).updateChildren(hashMap);
+
+                                            reference.child(key).updateChildren(hashM);
+
+                                            Toast.makeText(MainActivity.this, "Finding Route till User", Toast.LENGTH_SHORT).show();
+                                            dialogBuilder.dismiss();
+
+
+                                            Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+                                                    Uri.parse("http://maps.google.com/maps?&daddr="+ulat+","+ulong+""));
+                                            startActivity(intent);
+
+                                        }
+                                    });
+
+                                    /*decline.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+
+
+                                        }
+                                    });*/
+
+                                    bdone.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            dialogBuilder.dismiss();
+                                        }
+                                    });
+
+
+                                }
+                            } catch (Exception e) {
+                                System.out.println(e);
+                            }
+
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+
+            }
+        });
+
+
+    }
+
+    private void customdialogbuilder(String username, String contactno) {
+        TextView uname, phone;
+        Button accept, decline;
+        final AlertDialog dialogBuilder = new AlertDialog.Builder(MainActivity.this).create();
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.customdialog, null);
+        dialogBuilder.setCancelable(false);
+        uname = dialogView.findViewById(R.id.dname);
+        phone = dialogView.findViewById(R.id.dphone);
+        accept = dialogView.findViewById(R.id.acceptreqbtn);
+        decline = dialogView.findViewById(R.id.declinereqbtn);
+        uname.setText(username);
+        phone.setText(contactno);
+        final MediaPlayer mp = MediaPlayer.create(MainActivity.this, R.raw.notifsound);
+        mp.start();
+
+        Vibrator vibrator;
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator.vibrate(1000);
+        dialogBuilder.setView(dialogView);
+        dialogBuilder.show();
+
+    }
+
+    public void declinereq(View view) {
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("request", "0");
+        databaseRef.child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
+        Toast.makeText(MainActivity.this, "You Declined the request", Toast.LENGTH_SHORT).show();
+
+
+        dialogBuilder.dismiss();
 
 
     }

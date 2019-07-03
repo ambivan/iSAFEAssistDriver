@@ -100,6 +100,7 @@ public class SignUpActivity extends AppCompatActivity {
                     driver.setContact(contact.getText().toString());
                     driver.setPass(pass.getText().toString());
                     driver.setDid(firebaseAuth.getCurrentUser().getUid());
+                    driver.setRequest("0");
 
                     databaseReference.child("Driver").child(firebaseAuth.getCurrentUser().getUid()).setValue(driver, new DatabaseReference.CompletionListener() {
                         @Override

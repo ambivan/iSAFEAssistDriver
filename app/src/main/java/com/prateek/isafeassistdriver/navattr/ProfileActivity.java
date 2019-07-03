@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
@@ -41,6 +42,7 @@ import com.prateek.isafeassistdriver.dao.Driver;
 
 import java.io.IOError;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.UUID;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -79,14 +81,17 @@ public class ProfileActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle("Profile");
         edit.setText("Edit");
-        storage = FirebaseStorage.getInstance();
-        storageReference = storage.getReference();
+        storageReference = FirebaseStorage.getInstance().getReference().child("ImageFolder");
+    /*    storage = FirebaseStorage.getInstance();
+        storageReference = storage.getReferenceFromUrl("gs://isafeassist.appspot.com/images");
+    */
         driver = new Driver();
         getWindow().setSoftInputMode(
                 WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         //setTitle(Html.fromHtml("<font color='#000000'>Profile </font>"));
         auth = FirebaseAuth.getInstance();
         mobileno.setEnabled(false);
+
         email.setEnabled(false);
         databaseReference = FirebaseDatabase.getInstance().getReference().child("Driver").child(auth.getCurrentUser().getUid());
         progressDialog = new ProgressDialog(ProfileActivity.this);
@@ -133,22 +138,24 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void uploadPicture() {
         if (filepath != null) {
-            final StorageReference ref = storageReference.child("images/" + UUID.randomUUID().toString());
+            final StorageReference ref = storageReference.child("images" + filepath.getLastPathSegment());
             ref.putFile(filepath)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
                             ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
                                 public void onSuccess(Uri uri) {
-
-                                    String url = uri.toString();
-                                    System.out.println(url);
-                                    Glide.with(ProfileActivity.this).load(url).into(profile);
+                                    //DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Driver").child(auth.getCurrentUser().getUid());
+                                    HashMap<String, Object> hashMap = new HashMap<>();
+                                    hashMap.put("imageurl", String.valueOf(uri));
+                                    databaseReference.updateChildren(hashMap);
+                                    Toast.makeText(ProfileActivity.this, "Successfully saved", Toast.LENGTH_SHORT).show();
 
                                 }
                             });
-                            Toast.makeText(ProfileActivity.this, "Successfully added", Toast.LENGTH_SHORT).show();
+
                         }
                     });
 
@@ -193,6 +200,9 @@ public class ProfileActivity extends AppCompatActivity {
                 String name = dataSnapshot.child("name").getValue(String.class);
                 String mail = dataSnapshot.child("mail").getValue(String.class);
                 String mobile = dataSnapshot.child("contact").getValue(String.class);
+                String url= dataSnapshot.child("imageurl").getValue(String.class);
+                Glide.with(ProfileActivity.this).load(url).into(profile);
+
                 System.out.println(name);
                 System.out.println(mail);
                 System.out.println(mobile);
