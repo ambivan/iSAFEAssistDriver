@@ -78,6 +78,7 @@ import com.prateek.isafeassistdriver.navattr.FeedbackActivity;
 import com.prateek.isafeassistdriver.navattr.HelpActivity;
 import com.prateek.isafeassistdriver.navattr.NotiFicationActivity;
 import com.prateek.isafeassistdriver.navattr.ProfileActivity;
+import com.prateek.isafeassistdriver.remote.UserRequestActivity;
 import com.prateek.isafeassistdriver.welcome.SignUpActivity;
 import com.prateek.isafeassistdriver.welcome.SplashActivity;
 
@@ -500,11 +501,195 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    boolean cs, ts;
+    int isOn;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Towing Requests");
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Requests");
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Driver").child(auth.getCurrentUser().getUid());
+
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    String reqid = ds.child("requesting").getValue(String.class);
+                    System.out.println("reqid "+reqid);
+                    if (reqid.equals("1")) {
+                        cs = false;
+                        ts=true;
+                    } else {
+                        cs = true;
+
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    String reqid = ds.child("requesting").getValue(String.class);
+                    if (reqid.equals("1")) {
+                        ts = false;
+                        cs=true;
+                    } else {
+                        ts = true;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                isOn = dataSnapshot.child("status").getValue(Integer.class);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+        System.out.println(cs+" "+ ts);
+        if (cs == true && ts == false && isOn == 1) {
+            Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
+            intent.putExtra("cs", "1");
+            startActivity(intent);
+            finish();
+        } else if (cs == false && ts == true && isOn == 1) {
+            Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
+            intent.putExtra("cs", "0");
+            startActivity(intent);
+            finish();
+
+        } else if (cs && ts && isOn == 1) {
+            Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
+            intent.putExtra("cs", "100");
+            startActivity(intent);
+            finish();
+
+        }
+        //}
+
+
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
 
-        final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Driver");
+/*        Bundle bundle= getIntent().getExtras();
+        String  rr= bundle.getString("cancelreq");
+        if(rr.equals("0")){
+
+        }else{*/
+            /*DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Towing Requests");
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Requests");
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Driver").child(auth.getCurrentUser().getUid());
+
+            databaseReference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        String reqid = ds.child("requesting").getValue(String.class);
+                        if (reqid.equals("1")) {
+                            cs = true;
+                        } else {
+                            cs = false;
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+            reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        String reqid = ds.child("requesting").getValue(String.class);
+                        if (reqid.equals("1")) {
+                            ts = true;
+                        } else {
+                            ts = false;
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+            ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    isOn = dataSnapshot.child("status").getValue(Integer.class);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+
+            if (cs == true && ts == false && isOn == 1) {
+                Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
+                intent.putExtra("cs", "1");
+                startActivity(intent);
+                finish();
+            } else if (cs == false && ts == true && isOn == 1) {
+                Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
+                intent.putExtra("cs", "0");
+                startActivity(intent);
+                finish();
+
+            } else if (cs && ts && isOn == 1) {
+                Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
+                intent.putExtra("cs", "100");
+                startActivity(intent);
+                finish();
+
+            }*/
+        //}
+
+
+    }
+
+    /*@Override
+    protected void onRestart() {
+        super.onRestart();
+        Bundle bundle= getIntent().getExtras();
+        String  rr= bundle.getString("cancelreq");
+        if(rr.equals("0")){
+
+        }else{
+            onStart();
+        }
+
+    }*/
+    /*final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Driver");
         final DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Requests");
         geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
 
@@ -520,7 +705,8 @@ public class MainActivity extends AppCompatActivity
                     final String requesting = ds.child("requesting").getValue(String.class);
 
                     System.out.println("requesting " + requesting);
-                    databaseReference.child(auth.getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
+                    databaseReference.child(auth.getCurrentUser().getUid());
+                    databaseReference.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -529,7 +715,7 @@ public class MainActivity extends AppCompatActivity
                             final String longitude = dataSnapshot.child("longitude").getValue(String.class);
                             final String name = dataSnapshot.child("name").getValue(String.class);
                             final String phoneno = dataSnapshot.child("contact").getValue(String.class);
-                            final int status= dataSnapshot.child("status").getValue(Integer.class);
+                            final int status = dataSnapshot.child("status").getValue(Integer.class);
 
                             Location location1 = new Location("");
                             location1.setLatitude(Double.parseDouble(lat));
@@ -541,7 +727,7 @@ public class MainActivity extends AppCompatActivity
                                 float distanceInMeters = location1.distanceTo(location2);
                                 System.out.println(distanceInMeters);
 
-                                if (reqid.equals("1") && distanceInMeters < 5000 && requesting.equals("1") && status==1) {
+                                if (reqid.equals("1") && distanceInMeters < 5000 && requesting.equals("1") && status == 1) {
 
                                     Toast.makeText(MainActivity.this, "User requested", Toast.LENGTH_SHORT).show();
                                     //customdialogbuilder(username, contactno);
@@ -551,12 +737,12 @@ public class MainActivity extends AppCompatActivity
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                                    final DatabaseReference dd= FirebaseDatabase.getInstance().getReference().child("Driver");
+                                    final DatabaseReference dd = FirebaseDatabase.getInstance().getReference().child("Driver");
                                     dd.addValueEventListener(new ValueEventListener() {
                                         @Override
                                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            for(DataSnapshot dd: dataSnapshot.getChildren()){
-                                                 keyy= dd.getKey();
+                                            for (DataSnapshot dd : dataSnapshot.getChildren()) {
+                                                keyy = dd.getKey();
                                                 System.out.println(keyy);
                                             }
                                         }
@@ -577,14 +763,14 @@ public class MainActivity extends AppCompatActivity
                                     phone = dialogView.findViewById(R.id.dphone);
                                     accept = dialogView.findViewById(R.id.acceptreqbtn);
                                     decline = dialogView.findViewById(R.id.declinereqbtn);
-                                    bdone= dialogView.findViewById(R.id.donereqbtn);
+                                    bdone = dialogView.findViewById(R.id.donereqbtn);
                                     ulocation = dialogView.findViewById(R.id.dloc);
                                     uname.setText(username);
                                     phone.setText(contactno);
                                     ulocation.setText(add);
-                                    /*final MediaPlayer mp = MediaPlayer.create(MainActivity.this, R.raw.notifsound);
+                                    final MediaPlayer mp = MediaPlayer.create(MainActivity.this, R.raw.notifsound);
                                     mp.start();
-*/
+
                                     Vibrator vibrator;
                                     vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                                     vibrator.vibrate(1000);
@@ -594,6 +780,7 @@ public class MainActivity extends AppCompatActivity
                                     accept.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
+
 
                                             UserDetails details = new UserDetails();
                                             HashMap<String, Object> hashM = new HashMap<>();
@@ -615,21 +802,23 @@ public class MainActivity extends AppCompatActivity
                                             dialogBuilder.dismiss();
 
 
-                                            Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
-                                                    Uri.parse("http://maps.google.com/maps?&daddr="+ulat+","+ulong+""));
+                                            Intent intent = new Intent(Intent.ACTION_VIEW,
+                                                    Uri.parse("http://maps.google.com/maps?&daddr=" + ulat + "," + ulong + ""));
                                             startActivity(intent);
+
 
                                         }
                                     });
 
-                                    /*decline.setOnClickListener(new View.OnClickListener() {
+
+                                    decline.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
 
 
 
                                         }
-                                    });*/
+                                    });
 
                                     bdone.setOnClickListener(new View.OnClickListener() {
                                         @Override
@@ -638,12 +827,10 @@ public class MainActivity extends AppCompatActivity
                                         }
                                     });
 
-
                                 }
                             } catch (Exception e) {
                                 System.out.println(e);
                             }
-
 
                         }
 
@@ -653,21 +840,20 @@ public class MainActivity extends AppCompatActivity
                         }
                     });
 
-
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
-
             }
-        });
+
+        });*/
 
 
-    }
 
-    private void customdialogbuilder(String username, String contactno) {
+
+    /*private void customdialogbuilder(String username, String contactno) {
         TextView uname, phone;
         Button accept, decline;
         final AlertDialog dialogBuilder = new AlertDialog.Builder(MainActivity.this).create();
@@ -690,16 +876,13 @@ public class MainActivity extends AppCompatActivity
         dialogBuilder.show();
 
     }
-
-    public void declinereq(View view) {
+*/
+    /*public void declinereq(View view) {
         HashMap<String, Object> hashMap = new HashMap<>();
         hashMap.put("request", "0");
         databaseRef.child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
         Toast.makeText(MainActivity.this, "You Declined the request", Toast.LENGTH_SHORT).show();
-
-
         dialogBuilder.dismiss();
 
-
-    }
+    }*/
 }

@@ -200,9 +200,15 @@ public class ProfileActivity extends AppCompatActivity {
                 String name = dataSnapshot.child("name").getValue(String.class);
                 String mail = dataSnapshot.child("mail").getValue(String.class);
                 String mobile = dataSnapshot.child("contact").getValue(String.class);
-                String url= dataSnapshot.child("imageurl").getValue(String.class);
-                Glide.with(ProfileActivity.this).load(url).into(profile);
+                String url = dataSnapshot.child("imageurl").getValue(String.class);
+                if (url == null) {
+                    Glide.with(ProfileActivity.this).load(R.drawable.userprof).into(profile);
 
+                } else {
+
+                    Glide.with(ProfileActivity.this).load(url).into(profile);
+
+                }
                 System.out.println(name);
                 System.out.println(mail);
                 System.out.println(mobile);
