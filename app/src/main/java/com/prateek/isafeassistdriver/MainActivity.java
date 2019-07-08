@@ -78,6 +78,7 @@ import com.prateek.isafeassistdriver.navattr.FeedbackActivity;
 import com.prateek.isafeassistdriver.navattr.HelpActivity;
 import com.prateek.isafeassistdriver.navattr.NotiFicationActivity;
 import com.prateek.isafeassistdriver.navattr.ProfileActivity;
+import com.prateek.isafeassistdriver.remote.MyTripsActivity;
 import com.prateek.isafeassistdriver.remote.UserRequestActivity;
 import com.prateek.isafeassistdriver.welcome.SignUpActivity;
 import com.prateek.isafeassistdriver.welcome.SplashActivity;
@@ -115,6 +116,7 @@ public class MainActivity extends AppCompatActivity
     private BottomSheetBehavior bottomSheetBehavior;
     ProgressDialog progressDialog;
     String username, contactno, ulat, ulong;
+    Button tripdetails;
 
 
     @Override
@@ -129,6 +131,7 @@ public class MainActivity extends AppCompatActivity
         textView = findViewById(R.id.status_text);
         bottomSheetBehavior = BottomSheetBehavior.from(bottom);
         auth = FirebaseAuth.getInstance();
+        tripdetails = findViewById(R.id.tripdetailsbtn);
         databaseReference = FirebaseDatabase.getInstance().getReference();
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setMessage("Getting your Current Location");
@@ -227,6 +230,15 @@ public class MainActivity extends AppCompatActivity
                         Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                     }
                 });
+
+        tripdetails.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent= new Intent(MainActivity.this, MyTripsActivity.class);
+                startActivity(intent);
+
+            }
+        });
     }
 
     @Override
@@ -501,7 +513,8 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    boolean cs, ts;
+    boolean cs=false;
+    boolean ts=false;
     int isOn;
 
     @Override
@@ -516,12 +529,11 @@ public class MainActivity extends AppCompatActivity
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     String reqid = ds.child("requesting").getValue(String.class);
-                    System.out.println("reqid "+reqid);
+                    System.out.println("reqid " + reqid);
                     if (reqid.equals("1")) {
-                        cs = false;
-                        ts=true;
+                        //cs = false;
+                        ts = true;
                     } else {
-                        cs = true;
 
                     }
                 }
@@ -538,11 +550,12 @@ public class MainActivity extends AppCompatActivity
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     String reqid = ds.child("requesting").getValue(String.class);
+                    System.out.println("towing reqid "+reqid);
                     if (reqid.equals("1")) {
-                        ts = false;
-                        cs=true;
+                        //ts = false;
+                        cs = true;
                     } else {
-                        ts = true;
+
                     }
                 }
             }
@@ -566,12 +579,12 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-        System.out.println(cs+" "+ ts);
+        System.out.println(cs + " " + ts);
         if (cs == true && ts == false && isOn == 1) {
             Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
             intent.putExtra("cs", "1");
             startActivity(intent);
-            finish();
+             finish();
         } else if (cs == false && ts == true && isOn == 1) {
             Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
             intent.putExtra("cs", "0");
@@ -594,295 +607,5 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
 
-/*        Bundle bundle= getIntent().getExtras();
-        String  rr= bundle.getString("cancelreq");
-        if(rr.equals("0")){
-
-        }else{*/
-            /*DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Towing Requests");
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Requests");
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("Driver").child(auth.getCurrentUser().getUid());
-
-            databaseReference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                        String reqid = ds.child("requesting").getValue(String.class);
-                        if (reqid.equals("1")) {
-                            cs = true;
-                        } else {
-                            cs = false;
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-
-            reference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                        String reqid = ds.child("requesting").getValue(String.class);
-                        if (reqid.equals("1")) {
-                            ts = true;
-                        } else {
-                            ts = false;
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-
-            ref.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    isOn = dataSnapshot.child("status").getValue(Integer.class);
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-
-
-            if (cs == true && ts == false && isOn == 1) {
-                Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
-                intent.putExtra("cs", "1");
-                startActivity(intent);
-                finish();
-            } else if (cs == false && ts == true && isOn == 1) {
-                Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
-                intent.putExtra("cs", "0");
-                startActivity(intent);
-                finish();
-
-            } else if (cs && ts && isOn == 1) {
-                Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
-                intent.putExtra("cs", "100");
-                startActivity(intent);
-                finish();
-
-            }*/
-        //}
-
-
     }
-
-    /*@Override
-    protected void onRestart() {
-        super.onRestart();
-        Bundle bundle= getIntent().getExtras();
-        String  rr= bundle.getString("cancelreq");
-        if(rr.equals("0")){
-
-        }else{
-            onStart();
-        }
-
-    }*/
-    /*final DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("Driver");
-        final DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Requests");
-        geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    final String key = ds.getKey();
-                    username = ds.child("name").getValue(String.class);
-                    contactno = ds.child("contactNo").getValue(String.class);
-                    ulat = ds.child("lat").getValue(String.class);
-                    ulong = ds.child("longi").getValue(String.class);
-                    final String requesting = ds.child("requesting").getValue(String.class);
-
-                    System.out.println("requesting " + requesting);
-                    databaseReference.child(auth.getCurrentUser().getUid());
-                    databaseReference.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                            String reqid = dataSnapshot.child("request").getValue(String.class);
-                            final String lat = dataSnapshot.child("latitude").getValue(String.class);
-                            final String longitude = dataSnapshot.child("longitude").getValue(String.class);
-                            final String name = dataSnapshot.child("name").getValue(String.class);
-                            final String phoneno = dataSnapshot.child("contact").getValue(String.class);
-                            final int status = dataSnapshot.child("status").getValue(Integer.class);
-
-                            Location location1 = new Location("");
-                            location1.setLatitude(Double.parseDouble(lat));
-                            location1.setLongitude(Double.parseDouble(longitude));
-                            try {
-                                Location location2 = new Location("");
-                                location2.setLatitude(Double.parseDouble(ulat));
-                                location2.setLongitude(Double.parseDouble(ulong));
-                                float distanceInMeters = location1.distanceTo(location2);
-                                System.out.println(distanceInMeters);
-
-                                if (reqid.equals("1") && distanceInMeters < 5000 && requesting.equals("1") && status == 1) {
-
-                                    Toast.makeText(MainActivity.this, "User requested", Toast.LENGTH_SHORT).show();
-                                    //customdialogbuilder(username, contactno);
-
-                                    try {
-                                        addresses = geocoder.getFromLocation(Double.parseDouble(ulat), Double.parseDouble(ulong), 1);
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                    final DatabaseReference dd = FirebaseDatabase.getInstance().getReference().child("Driver");
-                                    dd.addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            for (DataSnapshot dd : dataSnapshot.getChildren()) {
-                                                keyy = dd.getKey();
-                                                System.out.println(keyy);
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                        }
-                                    });
-                                    String add = addresses.get(0).getAddressLine(0);
-                                    final TextView uname, phone, ulocation;
-                                    final Button accept, decline, bdone;
-                                    dialogBuilder = new AlertDialog.Builder(MainActivity.this).create();
-                                    LayoutInflater inflater = getLayoutInflater();
-                                    final View dialogView = inflater.inflate(R.layout.customdialog, null);
-                                    dialogBuilder.setCancelable(false);
-                                    uname = dialogView.findViewById(R.id.dname);
-                                    phone = dialogView.findViewById(R.id.dphone);
-                                    accept = dialogView.findViewById(R.id.acceptreqbtn);
-                                    decline = dialogView.findViewById(R.id.declinereqbtn);
-                                    bdone = dialogView.findViewById(R.id.donereqbtn);
-                                    ulocation = dialogView.findViewById(R.id.dloc);
-                                    uname.setText(username);
-                                    phone.setText(contactno);
-                                    ulocation.setText(add);
-                                    final MediaPlayer mp = MediaPlayer.create(MainActivity.this, R.raw.notifsound);
-                                    mp.start();
-
-                                    Vibrator vibrator;
-                                    vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                                    vibrator.vibrate(1000);
-                                    dialogBuilder.setView(dialogView);
-                                    dialogBuilder.show();
-
-                                    accept.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-
-
-                                            UserDetails details = new UserDetails();
-                                            HashMap<String, Object> hashM = new HashMap<>();
-                                            hashM.put("requesting", "0");
-                                            hashM.put("drivername", name);
-                                            hashM.put("driverphone", phoneno);
-                                            hashM.put("driverlat", lat);
-                                            hashM.put("driverlong", longitude);
-                                            details.setRequesting("0");
-                                            HashMap<String, Object> hashMap = new HashMap<>();
-                                            hashMap.put("request", "0");
-
-                                            //if (databaseReference.getKey() != auth.getCurrentUser().getUid()) {
-//                                            dd.child(keyy).updateChildren(hashMap);
-
-                                            reference.child(key).updateChildren(hashM);
-
-                                            Toast.makeText(MainActivity.this, "Finding Route till User", Toast.LENGTH_SHORT).show();
-                                            dialogBuilder.dismiss();
-
-
-                                            Intent intent = new Intent(Intent.ACTION_VIEW,
-                                                    Uri.parse("http://maps.google.com/maps?&daddr=" + ulat + "," + ulong + ""));
-                                            startActivity(intent);
-
-
-                                        }
-                                    });
-
-
-                                    decline.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-
-
-
-                                        }
-                                    });
-
-                                    bdone.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            dialogBuilder.dismiss();
-                                        }
-                                    });
-
-                                }
-                            } catch (Exception e) {
-                                System.out.println(e);
-                            }
-
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-
-        });*/
-
-
-
-
-    /*private void customdialogbuilder(String username, String contactno) {
-        TextView uname, phone;
-        Button accept, decline;
-        final AlertDialog dialogBuilder = new AlertDialog.Builder(MainActivity.this).create();
-        LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.customdialog, null);
-        dialogBuilder.setCancelable(false);
-        uname = dialogView.findViewById(R.id.dname);
-        phone = dialogView.findViewById(R.id.dphone);
-        accept = dialogView.findViewById(R.id.acceptreqbtn);
-        decline = dialogView.findViewById(R.id.declinereqbtn);
-        uname.setText(username);
-        phone.setText(contactno);
-        final MediaPlayer mp = MediaPlayer.create(MainActivity.this, R.raw.notifsound);
-        mp.start();
-
-        Vibrator vibrator;
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        vibrator.vibrate(1000);
-        dialogBuilder.setView(dialogView);
-        dialogBuilder.show();
-
-    }
-*/
-    /*public void declinereq(View view) {
-        HashMap<String, Object> hashMap = new HashMap<>();
-        hashMap.put("request", "0");
-        databaseRef.child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
-        Toast.makeText(MainActivity.this, "You Declined the request", Toast.LENGTH_SHORT).show();
-        dialogBuilder.dismiss();
-
-    }*/
 }

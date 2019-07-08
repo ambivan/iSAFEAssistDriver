@@ -3,10 +3,13 @@ package com.prateek.isafeassistdriver.welcome;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -17,6 +20,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.prateek.isafeassistdriver.MainActivity;
 import com.prateek.isafeassistdriver.R;
+import com.prateek.isafeassistdriver.navattr.FeedbackActivity;
 
 public class LogInActivity extends AppCompatActivity {
 
@@ -35,6 +39,16 @@ public class LogInActivity extends AppCompatActivity {
         login = findViewById(R.id.login_btn);
         auth = FirebaseAuth.getInstance();
         dialog = new ProgressDialog(LogInActivity.this);
+        Window window = LogInActivity.this.getWindow();
+
+// clear FLAG_TRANSLUCENT_STATUS flag:
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+// add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
+// finally change the color
+        window.setStatusBarColor(ContextCompat.getColor(LogInActivity.this, R.color.mystatus));
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -86,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center"
-                android:text="Your Trips"
+                android:text="My Trips"
                 android:textSize="16dp" />
 
         </LinearLayout>

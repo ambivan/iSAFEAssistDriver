@@ -34,7 +34,8 @@
         android:roundIcon="@mipmap/driver"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".remote.UserRequestActivity"></activity>
+        <activity android:name=".remote.MyTripsActivity"></activity>
+        <activity android:name=".remote.UserRequestActivity" />
         <activity
             android:name=".navattr.NotiFicationActivity"
             android:parentActivityName=".MainActivity"
