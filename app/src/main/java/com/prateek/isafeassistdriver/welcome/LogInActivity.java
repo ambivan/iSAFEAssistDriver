@@ -1,12 +1,15 @@
 package com.prateek.isafeassistdriver.welcome;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -78,6 +81,26 @@ public class LogInActivity extends AppCompatActivity {
                                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                                     startActivity(intent);
                                     finish();
+                                }else{
+                                    dialog.dismiss();
+
+                                    new AlertDialog.Builder(LogInActivity.this)
+                                            .setTitle("Login Failed")
+                                            .setMessage("Either this email has been pre occupied or your Net Connection is poor")
+
+                                            // Specifying a listener allows you to take an action before dismissing the dialog.
+                                            // The dialog is automatically dismissed when a dialog button is clicked.
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    // Continue with delete operation
+
+                                                }
+                                            })
+
+                                            // A null listener allows the button to dismiss the dialog and take no further action.
+                                            .setNegativeButton(android.R.string.no, null)
+                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                            .show();
                                 }
                             }
                         });

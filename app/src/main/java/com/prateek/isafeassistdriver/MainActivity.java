@@ -47,6 +47,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -89,6 +90,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
@@ -103,6 +106,8 @@ public class MainActivity extends AppCompatActivity
     private GoogleMap mMap;
     int status = 1;
     String keyy;
+    View header;
+    CircleImageView circleImageView;
     final DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference().child("Driver");
 
     ImageButton swipeup;
@@ -110,14 +115,16 @@ public class MainActivity extends AppCompatActivity
     Geocoder geocoder;
     List<Address> addresses;
     AlertDialog dialogBuilder;
-    TextView textView;
-    DatabaseReference databaseReference;
+    TextView textView, dname;
+    DatabaseReference databaseReference, ref;
     FirebaseAuth auth;
+    static String isOn="1";
+
     private BottomSheetBehavior bottomSheetBehavior;
     ProgressDialog progressDialog;
     String username, contactno, ulat, ulong;
     Button tripdetails;
-
+    NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,16 +142,53 @@ public class MainActivity extends AppCompatActivity
         databaseReference = FirebaseDatabase.getInstance().getReference();
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setMessage("Getting your Current Location");
-
+        ref = FirebaseDatabase.getInstance().getReference().child("Driver").child(auth.getCurrentUser().getUid());
         progressDialog.setCancelable(false);
         progressDialog.show();
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+
+
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String name = dataSnapshot.child("name").getValue(String.class);
+                String url = dataSnapshot.child("imageurl").getValue(String.class);
+                //textView.setText(name);
+                header = navigationView.getHeaderView(0);
+                dname = header.findViewById(R.id.header_name);
+                circleImageView = header.findViewById(R.id.header_profileimg);
+                circleImageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+
+                    }
+                });
+                if (url != null) {
+                    Glide.with(getApplicationContext()).load(url).into(circleImageView);
+
+                } else {
+                    Glide.with(getApplicationContext()).load(R.drawable.userprof).into(circleImageView);
+                    //startActivity(new Intent(MainActivity.this, ProfileActivity.class));
+
+                }
+                dname.setText(name);
+                System.out.println(name);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
 
         //mapcode
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -198,14 +242,16 @@ public class MainActivity extends AppCompatActivity
                 Driver driver = new Driver();
 
                 if (isChecked) {
-                    hashMap.put("status", 1);
+                    hashMap.put("status", "1");
+                    isOn="1";
                     driver.setStatus("1");
                     databaseReference.child("Driver").child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
                     startlocationUpdates();
                     textView.setText("You are Online");
                 } else {
-                    hashMap.put("status", 0);
-                    driver.setStatus("1");
+                    hashMap.put("status", "0");
+                    driver.setStatus("0");
+                    isOn="0";
                     databaseReference.child("Driver").child(auth.getCurrentUser().getUid()).updateChildren(hashMap);
 
                     removelocationUpdates();
@@ -234,7 +280,7 @@ public class MainActivity extends AppCompatActivity
         tripdetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent= new Intent(MainActivity.this, MyTripsActivity.class);
+                Intent intent = new Intent(MainActivity.this, MyTripsActivity.class);
                 startActivity(intent);
 
             }
@@ -513,9 +559,8 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    boolean cs=false;
-    boolean ts=false;
-    int isOn;
+    boolean cs = false;
+    boolean ts = false;
 
     @Override
     protected void onStart() {
@@ -550,7 +595,7 @@ public class MainActivity extends AppCompatActivity
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     String reqid = ds.child("requesting").getValue(String.class);
-                    System.out.println("towing reqid "+reqid);
+                    System.out.println("towing reqid " + reqid);
                     if (reqid.equals("1")) {
                         //ts = false;
                         cs = true;
@@ -566,32 +611,37 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        ref.addValueEventListener(new ValueEventListener() {
+/*        ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                isOn = dataSnapshot.child("status").getValue(Integer.class);
+
+                if(dataSnapshot.getValue()==null){
+
+                }else{
+                    isOn = dataSnapshot.child("status").getValue(String.class);
+
+                }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        });
-
+        });*/
 
         System.out.println(cs + " " + ts);
-        if (cs == true && ts == false && isOn == 1) {
+        if (cs == true && ts == false && isOn.equals("1")) {
             Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
             intent.putExtra("cs", "1");
             startActivity(intent);
-             finish();
-        } else if (cs == false && ts == true && isOn == 1) {
+            finish();
+        } else if (cs == false && ts == true && isOn.equals("1")) {
             Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
             intent.putExtra("cs", "0");
             startActivity(intent);
             finish();
 
-        } else if (cs && ts && isOn == 1) {
+        } else if (cs && ts && isOn.equals("1")) {
             Intent intent = new Intent(MainActivity.this, UserRequestActivity.class);
             intent.putExtra("cs", "100");
             startActivity(intent);

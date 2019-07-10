@@ -19,7 +19,7 @@
 
         <item
             android:id="@+id/nav_help"
-            android:title="Help"/>
+            android:title="Roadside Assistance"/>
         <item
             android:id="@+id/nav_feedback"
             android:title="Feedback"/>

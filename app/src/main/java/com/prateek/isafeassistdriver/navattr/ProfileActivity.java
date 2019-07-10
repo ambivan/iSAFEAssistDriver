@@ -123,19 +123,25 @@ public class ProfileActivity extends AppCompatActivity {
 
 
                 } else {
-                    DatabaseReference databaseref = FirebaseDatabase.getInstance().getReference().child("Driver");
-                    databaseref.child(auth.getCurrentUser().getUid()).child("mail").setValue(email.getText().toString());
-                    databaseref.child(auth.getCurrentUser().getUid()).child("contact").setValue(mobileno.getText().toString());
+                    if (mobileno.length() != 10) {
+                        Toast.makeText(ProfileActivity.this, "Enter a valid Phone Number", Toast.LENGTH_SHORT).show();
+                    } else if (!isEmailValid(email.getText().toString())) {
+                        Toast.makeText(ProfileActivity.this, "Invalid Email", Toast.LENGTH_SHORT).show();
+                    } else {
 
-                    uploadPicture();
-                    System.out.println(email.getText().toString());
-                    System.out.println(mobileno.getText().toString());
+                        DatabaseReference databaseref = FirebaseDatabase.getInstance().getReference().child("Driver");
+                        databaseref.child(auth.getCurrentUser().getUid()).child("mail").setValue(email.getText().toString());
+                        databaseref.child(auth.getCurrentUser().getUid()).child("contact").setValue(mobileno.getText().toString());
 
-                    Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
-                    mobileno.setEnabled(false);
-                    email.setEnabled(false);
-                    edit.setText("Edit");
+                        uploadPicture();
+                        System.out.println(email.getText().toString());
+                        System.out.println(mobileno.getText().toString());
 
+                        Toast.makeText(ProfileActivity.this, "Profile Updated Successfully", Toast.LENGTH_SHORT).show();
+                        mobileno.setEnabled(false);
+                        email.setEnabled(false);
+                        edit.setText("Edit");
+                    }
                 }
             }
         });
@@ -172,6 +178,10 @@ public class ProfileActivity extends AppCompatActivity {
                     });
 
         }
+    }
+
+    boolean isEmailValid(CharSequence email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
     private void updateDp() {
@@ -214,11 +224,11 @@ public class ProfileActivity extends AppCompatActivity {
                 String mobile = dataSnapshot.child("contact").getValue(String.class);
                 String url = dataSnapshot.child("imageurl").getValue(String.class);
                 if (url == null) {
-                    Glide.with(ProfileActivity.this).load(R.drawable.userprof).into(profile);
+                    Glide.with(getApplicationContext()).load(R.drawable.userprof).into(profile);
 
                 } else {
 
-                    Glide.with(ProfileActivity.this).load(url).into(profile);
+                    Glide.with(getApplicationContext()).load(url).into(profile);
 
                 }
                 System.out.println(name);

@@ -73,6 +73,10 @@ public class SignUpActivity extends AppCompatActivity {
                     name.requestFocus();
                     checkstatus = false;
 
+                }else if(!isEmailValid(mail.getText().toString())){
+                    Toast.makeText(SignUpActivity.this, "Enter a valid email", Toast.LENGTH_SHORT).show();
+
+
                 } else {
 
                     if (!pass.getText().toString().equals(confirmpass.getText().toString())) {
@@ -96,6 +100,9 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
+    boolean isEmailValid(CharSequence email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
     public void UserRegistrationfunction() {
 
         // Showing progress dialog at user registration time.
@@ -116,6 +123,7 @@ public class SignUpActivity extends AppCompatActivity {
                     driver.setPass(pass.getText().toString());
                     driver.setDid(firebaseAuth.getCurrentUser().getUid());
                     driver.setRequest("0");
+                    driver.setStatus("1");
 
                     databaseReference.child("Driver").child(firebaseAuth.getCurrentUser().getUid()).setValue(driver, new DatabaseReference.CompletionListener() {
                         @Override
